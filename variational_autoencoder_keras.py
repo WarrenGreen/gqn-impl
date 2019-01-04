@@ -184,9 +184,9 @@ if __name__ == '__main__':
     vae.add_loss(vae_loss)
     vae.compile(optimizer='adam')
     vae.summary()
-    plot_model(vae,
-               to_file='vae_mlp.png',
-               show_shapes=True)
+    #plot_model(vae,
+    #           to_file='vae_mlp.png',
+    #           show_shapes=True)
 
     if args.weights:
         vae.load_weights(args.weights)

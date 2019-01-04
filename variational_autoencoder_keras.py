@@ -25,12 +25,12 @@ import os
 # reparameterization trick
 # instead of sampling from Q(z|X), sample eps = N(0,I)
 # z = z_mean + sqrt(var)*eps
-from tensorflow.python.keras import backend as K, Input
-from tensorflow.python.keras._impl.keras.datasets import mnist
-from tensorflow.python.keras._impl.keras.engine import Model
-from tensorflow.python.keras._impl.keras.layers import Lambda, Dense
-from tensorflow.python.keras._impl.keras.losses import mse, binary_crossentropy
-from tensorflow.python.keras._impl.keras.utils import plot_model
+from tensorflow.contrib.keras.python.keras.layers import Lambda
+from tensorflow.contrib.keras.python.keras.losses import mse, binary_crossentropy
+from tensorflow.python.keras import backend as K, Input, Model
+from tensorflow.python.keras.datasets import mnist
+from tensorflow.python.layers.convolutional import Conv2DTranspose, Conv2D
+from tensorflow.python.layers.core import Dense
 
 
 def sampling(args):
@@ -114,48 +114,48 @@ def plot_results(models,
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
 image_size = x_train.shape[1]
-original_dim = image_size * image_size
-x_train = np.reshape(x_train, [-1, original_dim])
-x_test = np.reshape(x_test, [-1, original_dim])
 x_train = x_train.astype('float32') / 255
 x_test = x_test.astype('float32') / 255
 
 # network parameters
-input_shape = (original_dim, )
+input_shape = (image_size, image_size)
 intermediate_dim = 512
 batch_size = 128
 latent_dim = 2
 epochs = 50
 
-# VAE model = encoder + decoder
-# build encoder model
-inputs = Input(shape=input_shape, name='encoder_input')
-x = Dense(intermediate_dim, activation='relu')(inputs)
-z_mean = Dense(latent_dim, name='z_mean')(x)
-z_log_var = Dense(latent_dim, name='z_log_var')(x)
 
-# use reparameterization trick to push the sampling out as input
-# note that "output_shape" isn't necessary with the TensorFlow backend
-z = Lambda(sampling, output_shape=(latent_dim,), name='z')([z_mean, z_log_var])
+def get_model(input_shape, intermediate_dim, latent_dim):
+    # VAE model = encoder + decoder
+    # build encoder model
+    inputs = Input(shape=input_shape, name='encoder_input')
+    x = Conv2D(64, (3,3), activation='relu')(inputs)
+    z_mean = Dense(latent_dim, name='z_mean')(x)
+    z_log_var = Dense(latent_dim, name='z_log_var')(x)
 
-# instantiate encoder model
-encoder = Model(inputs, [z_mean, z_log_var, z], name='encoder')
-encoder.summary()
-# plot_model(encoder, to_file='vae_mlp_encoder.png', show_shapes=True)
+    # use reparameterization trick to push the sampling out as input
+    # note that "output_shape" isn't necessary with the TensorFlow backend
+    z = Lambda(sampling, output_shape=(latent_dim,), name='z')([z_mean, z_log_var])
 
-# build decoder model
-latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
-x = Dense(intermediate_dim, activation='relu')(latent_inputs)
-outputs = Dense(original_dim, activation='sigmoid')(x)
+    # instantiate encoder model
+    encoder = Model(inputs, [z_mean, z_log_var, z], name='encoder')
+    encoder.summary()
+    # plot_model(encoder, to_file='vae_mlp_encoder.png', show_shapes=True)
 
-# instantiate decoder model
-decoder = Model(latent_inputs, outputs, name='decoder')
-decoder.summary()
-# plot_model(decoder, to_file='vae_mlp_decoder.png', show_shapes=True)
+    # build decoder model
+    latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
+    x = Dense(intermediate_dim, activation='relu')(latent_inputs)
+    outputs = Conv2DTranspose(64, (3,3), activation='sigmoid')(x)
 
-# instantiate VAE model
-outputs = decoder(encoder(inputs)[2])
-vae = Model(inputs, outputs, name='vae_mlp')
+    # instantiate decoder model
+    decoder = Model(latent_inputs, outputs, name='decoder')
+    decoder.summary()
+    # plot_model(decoder, to_file='vae_mlp_decoder.png', show_shapes=True)
+
+    # instantiate VAE model
+    outputs = decoder(encoder(inputs)[2])
+    vae = Model(inputs, outputs, name='vae_mlp')
+    return vae, encoder, decoder, inputs, z_mean, z_log_var, latent_inputs, outputs
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -166,6 +166,7 @@ if __name__ == '__main__':
                         "--mse",
                         help=help_, action='store_true')
     args = parser.parse_args()
+    vae, encoder, decoder, inputs, z_mean, z_log_var, latent_inputs, outputs = get_model(input_shape, intermediate_dim, latent_dim)
     models = (encoder, decoder)
     data = (x_test, y_test)
 
@@ -176,7 +177,6 @@ if __name__ == '__main__':
         reconstruction_loss = binary_crossentropy(inputs,
                                                   outputs)
 
-    reconstruction_loss *= original_dim
     kl_loss = 1 + z_log_var - K.square(z_mean) - K.exp(z_log_var)
     kl_loss = K.sum(kl_loss, axis=-1)
     kl_loss *= -0.5

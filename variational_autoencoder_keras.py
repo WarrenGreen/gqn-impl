@@ -25,9 +25,10 @@ import os
 # reparameterization trick
 # instead of sampling from Q(z|X), sample eps = N(0,I)
 # z = z_mean + sqrt(var)*eps
-from tensorflow.contrib.keras.python.keras.layers import Lambda
-from tensorflow.contrib.keras.python.keras.losses import mse, binary_crossentropy
+from tensorflow.contrib.keras.python.keras.losses import binary_crossentropy
 from tensorflow.python.keras import backend as K, Input, Model
+from tensorflow.python.keras._impl.keras.layers import Lambda
+from tensorflow.python.keras._impl.keras.losses import mse
 from tensorflow.python.keras.datasets import mnist
 from tensorflow.python.layers.convolutional import Conv2DTranspose, Conv2D
 from tensorflow.python.layers.core import Dense

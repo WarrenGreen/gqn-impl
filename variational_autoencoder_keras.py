@@ -27,7 +27,7 @@ import os
 # z = z_mean + sqrt(var)*eps
 from tensorflow.python.keras import backend as K, Input, Model
 from tensorflow.python.keras._impl.keras.backend import binary_crossentropy, relu, sigmoid
-from tensorflow.python.keras._impl.keras.layers import Lambda, Flatten
+from tensorflow.python.keras._impl.keras.layers import Lambda, Flatten, Reshape
 from tensorflow.python.keras._impl.keras.losses import mse
 from tensorflow.python.keras.datasets import mnist
 from tensorflow.python.layers.convolutional import Conv2DTranspose, Conv2D
@@ -122,7 +122,7 @@ x_test = x_test.astype('float32') / 255
 
 # network parameters
 input_shape = (image_size, image_size, 1)
-intermediate_dim = 512
+intermediate_dim = 784
 batch_size = 128
 latent_dim = 2
 epochs = 50
@@ -149,6 +149,7 @@ def get_model(input_shape, intermediate_dim, latent_dim):
     # build decoder model
     latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
     x = Dense(intermediate_dim, activation=relu)(latent_inputs)
+    x = Reshape((-1, 28, 28, 1))(x)
     outputs = Conv2DTranspose(64, (3,3), activation=sigmoid)(x)
 
     # instantiate decoder model

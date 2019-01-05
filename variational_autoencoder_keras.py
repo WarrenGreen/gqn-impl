@@ -148,7 +148,7 @@ def get_model(input_shape, intermediate_dim, latent_dim):
 
     # build decoder model
     latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
-    x = Dense(intermediate_dim, activation='relu')(latent_inputs)
+    x = Dense(intermediate_dim, activation=relu)(latent_inputs)
     outputs = Conv2DTranspose(64, (3,3), activation=sigmoid)(x)
 
     # instantiate decoder model

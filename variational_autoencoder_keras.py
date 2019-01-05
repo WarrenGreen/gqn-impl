@@ -151,7 +151,7 @@ def get_model(input_shape, intermediate_dim, latent_dim):
     x = Dense(intermediate_dim, activation=relu)(latent_inputs)
     x = Reshape((28, 28, 1))(x)
     x = Conv2DTranspose(64, (3,3), activation=sigmoid, padding='same')(x)
-    outputs = Conv2D(3, (3,3), activation=sigmoid, padding='same')(x)
+    outputs = Conv2D(1, (3,3), activation=sigmoid, padding='same')(x)
 
     # instantiate decoder model
     decoder = Model(latent_inputs, outputs, name='decoder')

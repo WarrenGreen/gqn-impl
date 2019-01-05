@@ -121,7 +121,7 @@ x_train = x_train.astype('float32') / 255
 x_test = x_test.astype('float32') / 255
 
 # network parameters
-input_shape = (image_size, image_size)
+input_shape = (image_size, image_size, 1)
 intermediate_dim = 512
 batch_size = 128
 latent_dim = 2

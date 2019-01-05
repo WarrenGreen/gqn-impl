@@ -183,6 +183,7 @@ if __name__ == '__main__':
         reconstruction_loss = binary_crossentropy(inputs,
                                                   outputs)
 
+    reconstruction_loss *= image_size*image_size
     kl_loss = 1 + z_log_var - K.square(z_mean) - K.exp(z_log_var)
     kl_loss = K.sum(kl_loss, axis=-1)
     kl_loss *= -0.5

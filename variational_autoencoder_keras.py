@@ -133,7 +133,7 @@ def get_model(input_shape, intermediate_dim, latent_dim):
     # build encoder model
     inputs = Input(shape=input_shape, name='encoder_input')
     x = Conv2D(64, (3,3), activation=relu)(inputs)
-    x = Flatten(x)
+    x = Flatten()(x)
     z_mean = Dense(latent_dim, name='z_mean')(x)
     z_log_var = Dense(latent_dim, name='z_log_var')(x)
 

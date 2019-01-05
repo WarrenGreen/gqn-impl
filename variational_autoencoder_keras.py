@@ -149,7 +149,7 @@ def get_model(input_shape, intermediate_dim, latent_dim):
     # build decoder model
     latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
     x = Dense(intermediate_dim, activation=relu)(latent_inputs)
-    x = Reshape((-1, 28, 28, 1))(x)
+    x = Reshape((28, 28, 1))(x)
     outputs = Conv2DTranspose(64, (3,3), activation=sigmoid)(x)
 
     # instantiate decoder model

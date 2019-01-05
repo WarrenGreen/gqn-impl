@@ -26,7 +26,7 @@ import os
 # instead of sampling from Q(z|X), sample eps = N(0,I)
 # z = z_mean + sqrt(var)*eps
 from tensorflow.python.keras import backend as K, Input, Model
-from tensorflow.python.keras._impl.keras.backend import binary_crossentropy
+from tensorflow.python.keras._impl.keras.backend import binary_crossentropy, relu, sigmoid
 from tensorflow.python.keras._impl.keras.layers import Lambda
 from tensorflow.python.keras._impl.keras.losses import mse
 from tensorflow.python.keras.datasets import mnist
@@ -132,7 +132,7 @@ def get_model(input_shape, intermediate_dim, latent_dim):
     # VAE model = encoder + decoder
     # build encoder model
     inputs = Input(shape=input_shape, name='encoder_input')
-    x = Conv2D(64, (3,3), activation='relu')(inputs)
+    x = Conv2D(64, (3,3), activation=relu)(inputs)
     z_mean = Dense(latent_dim, name='z_mean')(x)
     z_log_var = Dense(latent_dim, name='z_log_var')(x)
 
@@ -148,7 +148,7 @@ def get_model(input_shape, intermediate_dim, latent_dim):
     # build decoder model
     latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
     x = Dense(intermediate_dim, activation='relu')(latent_inputs)
-    outputs = Conv2DTranspose(64, (3,3), activation='sigmoid')(x)
+    outputs = Conv2DTranspose(64, (3,3), activation=sigmoid)(x)
 
     # instantiate decoder model
     decoder = Model(latent_inputs, outputs, name='decoder')

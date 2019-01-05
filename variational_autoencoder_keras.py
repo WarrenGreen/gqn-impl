@@ -132,8 +132,9 @@ def get_model(input_shape, intermediate_dim, latent_dim):
     # VAE model = encoder + decoder
     # build encoder model
     inputs = Input(shape=input_shape, name='encoder_input')
-    x = Conv2D(64, (3,3), activation=relu)(inputs)
-    x = Conv2D(64, (3,3), activation=relu)(inputs)
+    x = Conv2D(64, (2,2), activation=relu)(inputs)
+    x = Conv2D(64, (3,3), activation=relu)(x)
+    x = Conv2D(64, (3,3), activation=relu)(x)
     x = Flatten()(x)
     z_mean = Dense(latent_dim, name='z_mean')(x)
     z_log_var = Dense(latent_dim, name='z_log_var')(x)
@@ -149,12 +150,12 @@ def get_model(input_shape, intermediate_dim, latent_dim):
 
     # build decoder model
     latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
-    x = Dense(intermediate_dim/2, activation=relu)(latent_inputs)
     x = Dense(intermediate_dim, activation=relu)(latent_inputs)
-    x = Reshape((28, 28, 1))(x)
+    x = Dense(64*28*28, activation=relu)(x)
+    x = Reshape((28, 28, 64))(x)
     x = Conv2DTranspose(64, (3,3), activation=sigmoid, padding='same')(x)
     x = Conv2DTranspose(64, (3,3), activation=sigmoid, padding='same')(x)
-    outputs = Conv2D(1, (3,3), activation=sigmoid, padding='same')(x)
+    outputs = Conv2D(1, (2, 2), activation=sigmoid, padding='same')(x)
 
     # instantiate decoder model
     decoder = Model(latent_inputs, outputs, name='decoder')

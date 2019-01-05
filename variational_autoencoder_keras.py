@@ -133,6 +133,7 @@ def get_model(input_shape, intermediate_dim, latent_dim):
     # build encoder model
     inputs = Input(shape=input_shape, name='encoder_input')
     x = Conv2D(64, (3,3), activation=relu)(inputs)
+    x = Conv2D(64, (3,3), activation=relu)(inputs)
     x = Flatten()(x)
     z_mean = Dense(latent_dim, name='z_mean')(x)
     z_log_var = Dense(latent_dim, name='z_log_var')(x)
@@ -148,8 +149,10 @@ def get_model(input_shape, intermediate_dim, latent_dim):
 
     # build decoder model
     latent_inputs = Input(shape=(latent_dim,), name='z_sampling')
+    x = Dense(intermediate_dim/2, activation=relu)(latent_inputs)
     x = Dense(intermediate_dim, activation=relu)(latent_inputs)
     x = Reshape((28, 28, 1))(x)
+    x = Conv2DTranspose(64, (3,3), activation=sigmoid, padding='same')(x)
     x = Conv2DTranspose(64, (3,3), activation=sigmoid, padding='same')(x)
     outputs = Conv2D(1, (3,3), activation=sigmoid, padding='same')(x)
 
@@ -177,6 +180,8 @@ if __name__ == '__main__':
     data = (x_test, y_test)
 
     # VAE loss = mse_loss or xent_loss + kl_loss
+    inputs = K.flatten(inputs)
+    outputs = K.flatten(outputs)
     if args.mse:
         reconstruction_loss = mse(inputs, outputs)
     else:

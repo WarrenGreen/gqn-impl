@@ -180,8 +180,8 @@ if __name__ == '__main__':
     data = (x_test, y_test)
 
     # VAE loss = mse_loss or xent_loss + kl_loss
-    inputs = K.flatten(inputs)
-    outputs = K.flatten(outputs)
+    # inputs = K.flatten(inputs)
+    # outputs = K.flatten(outputs)
     if args.mse:
         reconstruction_loss = mse(inputs, outputs)
     else:

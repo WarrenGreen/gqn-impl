@@ -27,7 +27,7 @@ import os
 # z = z_mean + sqrt(var)*eps
 from tensorflow.python.keras import backend as K, Input, Model
 from tensorflow.python.keras._impl.keras.backend import binary_crossentropy, relu, sigmoid
-from tensorflow.python.keras._impl.keras.layers import Lambda
+from tensorflow.python.keras._impl.keras.layers import Lambda, Flatten
 from tensorflow.python.keras._impl.keras.losses import mse
 from tensorflow.python.keras.datasets import mnist
 from tensorflow.python.layers.convolutional import Conv2DTranspose, Conv2D
@@ -133,6 +133,7 @@ def get_model(input_shape, intermediate_dim, latent_dim):
     # build encoder model
     inputs = Input(shape=input_shape, name='encoder_input')
     x = Conv2D(64, (3,3), activation=relu)(inputs)
+    x = Flatten(x)
     z_mean = Dense(latent_dim, name='z_mean')(x)
     z_log_var = Dense(latent_dim, name='z_log_var')(x)
 

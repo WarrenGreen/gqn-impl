@@ -34,7 +34,7 @@ from tensorflow.python.layers.convolutional import Conv2DTranspose, Conv2D
 from tensorflow.python.layers.core import Dense
 from typing import Tuple
 
-from data_reader import DataReader, Query, Context
+from data_reader import DataReader, Query, Context, _DATASETS
 
 
 def sampling(args):
@@ -118,6 +118,7 @@ def plot_results(models,
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
 image_size = x_train.shape[1]
+image_channels = 3
 x_train = np.reshape(x_train, (-1, image_size, image_size, 1))
 x_test = np.reshape(x_test, (-1, image_size, image_size, 1))
 x_train = x_train.astype('float32') / 255
@@ -142,7 +143,7 @@ def data_gen(train_or_test = 'train') -> Tuple:
 
 
 # network parameters
-input_shape = (image_size, image_size, 1)
+input_shape = (image_size, image_size, image_channels)
 intermediate_dim = 784
 batch_size = 128
 latent_dim = 2
@@ -176,7 +177,7 @@ def get_model(input_shape, intermediate_dim, latent_dim):
     x = Reshape((28, 28, 64))(x)
     x = Conv2DTranspose(64, (3,3), activation=sigmoid, padding='same')(x)
     x = Conv2DTranspose(64, (3,3), activation=sigmoid, padding='same')(x)
-    outputs = Conv2D(1, (2, 2), activation=sigmoid, padding='same')(x)
+    outputs = Conv2D(image_channels, (2, 2), padding='same')(x)
 
     # instantiate decoder model
     decoder = Model(latent_inputs, outputs, name='decoder')
@@ -230,7 +231,9 @@ if __name__ == '__main__':
         # train the autoencoder
         vae.fit_generator(train_data_gen,
                 epochs=epochs,
-                validation_data=test_data_gen)
+                steps_per_epoch=_DATASETS[scene_name].train_size,
+                validation_data=test_data_gen,
+                validation_steps=_DATASETS[scene_name].test_size)
         vae.save_weights('vae_mlp_mnist.h5')
 
     plot_results(models,

@@ -48,6 +48,7 @@ batch_size = 64
 
 # Network Parameters
 image_dim = 28 # MNIST images are 28x28 pixels
+image_channels = 1
 hidden_dim = 512
 latent_dim = 2
 
@@ -60,7 +61,7 @@ def glorot_init(shape):
 # context_image = tf.placeholder(tf.float32, shape=[None, CONTEXT_SIZE, image_dim, image_dim, 3])
 # context_camera = tf.placeholder(tf.float32, shape=[None, CONTEXT_SIZE, 7])
 # query_camera = tf.placeholder(tf.float32, shape=[None, 7])
-target_image = tf.placeholder(tf.float32, shape=[None, image_dim, image_dim, 1])
+target_image = tf.placeholder(tf.float32, shape=[None, image_dim, image_dim, image_channels])
 
 encoder = tf.layers.Conv2D(64, (2,2), activation=tf.nn.relu)(target_image)
 encoder = tf.layers.Conv2D(64, (3,3), activation=tf.nn.relu)(encoder)
@@ -81,7 +82,7 @@ decoder = tf.layers.Dense(64*28*28, activation=tf.nn.relu)(decoder)
 decoder = tf.reshape(decoder, (-1, 28, 28, 64))
 decoder = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(decoder)
 decoder = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(decoder)
-decoder = tf.layers.Conv2D(3, (2,2), activation=tf.sigmoid, padding='same')(decoder)
+decoder = tf.layers.Conv2D(image_channels, (2,2), activation=tf.sigmoid, padding='same')(decoder)
 
 
 # Define VAE Loss
@@ -121,7 +122,7 @@ with tf.Session() as sess:
         # query_camera_batch: np.ndarray = query[1]
         # context_images: np.ndarray = context[0]
         # context_cameras: np.ndarray = context[1]
-        batch_x = np.reshape(batch_x, (-1, image_dim, image_dim, 1))
+        batch_x = np.reshape(batch_x, (-1, image_dim, image_dim, image_channels))
 
         # Train
         feed_dict = {
@@ -132,21 +133,22 @@ with tf.Session() as sess:
 
     # Testing
     # Generator takes noise as input
-    noise_input = tf.placeholder(tf.float32, shape=[None, latent_dim])
-    # Rebuild the decoder to create image from noise
-    # Building a manifold of generated digits
-    n = 20
-    x_axis = np.linspace(-3, 3, n)
-    y_axis = np.linspace(-3, 3, n)
-
-    canvas = np.empty((28 * n, 28 * n))
-    for i, yi in enumerate(x_axis):
-        for j, xi in enumerate(y_axis):
-            z_mu = np.array([[xi, yi]] * batch_size)
-            x_mean = sess.run(decoder, feed_dict={noise_input: z_mu})
-            canvas[(n - i - 1) * 28:(n - i) * 28, j * 28:(j + 1) * 28] = \
-            x_mean[0].reshape(28, 28)
-
-    plt.figure(figsize=(8, 10))
-    Xi, Yi = np.meshgrid(x_axis, y_axis)
-    plt.imsave('canvas.png', canvas)
+    #noise_input = tf.placeholder(tf.float32, shape=[None, latent_dim])
+    ## Rebuild the decoder to create image from noise
+    ## Building a manifold of generated digits
+    #n = 20
+    #x_axis = np.linspace(-3, 3, n)
+    #y_axis = np.linspace(-3, 3, n)
+#
+    #canvas = np.empty((28 * n, 28 * n))
+    #for i, yi in enumerate(x_axis):
+    #    for j, xi in enumerate(y_axis):
+    #        z_mu = np.array([[xi, yi]] * batch_size)
+    #        x_mean = sess.run(decoder, feed_dict={noise_input: z_mu})
+    #        canvas[(n - i - 1) * 28:(n - i) * 28, j * 28:(j + 1) * 28] = \
+    #        x_mean[0].reshape(28, 28)
+#
+    #plt.figure(figsize=(8, 10))
+    #Xi, Yi = np.meshgrid(x_axis, y_axis)
+    #plt.imsave('canvas.png', canvas)
+#

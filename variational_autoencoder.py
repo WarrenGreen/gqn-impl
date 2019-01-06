@@ -83,7 +83,7 @@ x = tf.layers.Dense(64*28*28, activation=tf.nn.relu)(x)
 x = tf.reshape(x, (-1, 28, 28, 64))
 x = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(x)
 x = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(x)
-x = tf.layers.Conv2D(image_channels, (2,2), activation=tf.sigmoid, padding='same')(x)
+output = tf.layers.Conv2D(image_channels, (2,2), activation=tf.sigmoid, padding='same')(x)
 
 
 # Define VAE Loss
@@ -98,7 +98,7 @@ def vae_loss(x_reconstructed, x_true):
     return tf.reduce_mean(encode_decode_loss + kl_div_loss)
 
 
-loss_op = vae_loss(decoder, target_image)
+loss_op = vae_loss(output, target_image)
 optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
 train_op = optimizer.minimize(loss_op)
 

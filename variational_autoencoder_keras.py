@@ -14,7 +14,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-
+import tensorflow as tf
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -130,6 +130,7 @@ CONTEXT_SIZE = 4
 
 
 def data_gen(train_or_test = 'train') -> Tuple:
+    sess = tf.Session()
     data_reader = DataReader(dataset=scene_name, context_size=CONTEXT_SIZE, root=root_path, mode=train_or_test)
     while True:
         data = data_reader.read(batch_size=12)
@@ -139,6 +140,7 @@ def data_gen(train_or_test = 'train') -> Tuple:
         query_camera_batch: np.ndarray = query[1]
         context_images: np.ndarray = context[0]
         context_cameras: np.ndarray = context[1]
+        target_img_batch = sess.run(target_img_batch)
         yield target_img_batch, target_img_batch
 
 

@@ -140,7 +140,6 @@ def data_gen(train_or_test = 'train') -> Tuple:
         query_camera_batch: np.ndarray = query[1]
         context_images: np.ndarray = context[0]
         context_cameras: np.ndarray = context[1]
-        target_img_batch = sess.run(target_img_batch)
         yield target_img_batch, target_img_batch
 
 
@@ -152,10 +151,10 @@ latent_dim = 2
 epochs = 50
 
 
-def get_model(input_shape, intermediate_dim, latent_dim):
+def get_model(input_shape, intermediate_dim, latent_dim, input_tensor):
     # VAE model = encoder + decoder
     # build encoder model
-    inputs = Input(shape=input_shape, name='encoder_input')
+    inputs = Input(shape=input_shape, name='encoder_input', tensor=input_tensor)
     x = Conv2D(64, (2,2), activation=relu)(inputs)
     x = Conv2D(64, (3,3), activation=relu)(x)
     x = Conv2D(64, (3,3), activation=relu)(x)
@@ -200,7 +199,7 @@ if __name__ == '__main__':
                         "--mse",
                         help=help_, action='store_true')
     args = parser.parse_args()
-    vae, encoder, decoder, inputs, z_mean, z_log_var, latent_inputs, outputs = get_model(input_shape, intermediate_dim, latent_dim)
+    vae, encoder, decoder, inputs, z_mean, z_log_var, latent_inputs, outputs = get_model(input_shape, intermediate_dim, latent_dim, )
     models = (encoder, decoder)
     data = (x_test, y_test)
 
@@ -230,12 +229,16 @@ if __name__ == '__main__':
     if args.weights:
         vae.load_weights(args.weights)
     else:
-        # train the autoencoder
-        vae.fit_generator(train_data_gen,
-                epochs=epochs,
-                steps_per_epoch=_DATASETS[scene_name].train_size,
-                validation_data=test_data_gen,
-                validation_steps=_DATASETS[scene_name].test_size)
+        for i in range(epochs):
+            for j in range(60000):
+                x, y = next(train_data_gen)
+                vae.train_on_batch(x,y)
+        ## train the autoencoder
+        #vae.fit_generator(train_data_gen,
+        #        epochs=epochs,
+        #        steps_per_epoch=_DATASETS[scene_name].train_size,
+        #        validation_data=test_data_gen,
+        #        validation_steps=_DATASETS[scene_name].test_size)
         vae.save_weights('vae_mlp_mnist.h5')
 
     plot_results(models,

@@ -32,6 +32,9 @@ from tensorflow.python.keras._impl.keras.losses import mse
 from tensorflow.python.keras.datasets import mnist
 from tensorflow.python.layers.convolutional import Conv2DTranspose, Conv2D
 from tensorflow.python.layers.core import Dense
+from typing import Tuple
+
+from data_reader import DataReader, Query, Context
 
 
 def sampling(args):
@@ -120,6 +123,24 @@ x_test = np.reshape(x_test, (-1, image_size, image_size, 1))
 x_train = x_train.astype('float32') / 255
 x_test = x_test.astype('float32') / 255
 
+root_path = '/mnt/es0/data/warren/gqn-impl/data'
+scene_name = 'rooms_ring_camera'
+CONTEXT_SIZE = 4
+
+
+def data_gen(train_or_test = 'train') -> Tuple:
+    data_reader = DataReader(dataset='scene_name', context_size=CONTEXT_SIZE, root=root_path, mode=train_or_test)
+    while True:
+        data = data_reader.read(batch_size=12)
+        query: Query = data[0]
+        target_img_batch: np.ndarray = data[1]
+        context: Context = query[0]
+        query_camera_batch: np.ndarray = query[1]
+        context_images: np.ndarray = context[0]
+        context_cameras: np.ndarray = context[1]
+        yield target_img_batch, target_img_batch
+
+
 # network parameters
 input_shape = (image_size, image_size, 1)
 intermediate_dim = 784
@@ -201,14 +222,15 @@ if __name__ == '__main__':
     #           to_file='vae_mlp.png',
     #           show_shapes=True)
 
+    train_data_gen = data_gen()
+    test_data_gen =  data_gen('test')
     if args.weights:
         vae.load_weights(args.weights)
     else:
         # train the autoencoder
-        vae.fit(x_train,
+        vae.fit_generator(train_data_gen,
                 epochs=epochs,
-                batch_size=batch_size,
-                validation_data=(x_test, None))
+                validation_data=test_data_gen)
         vae.save_weights('vae_mlp_mnist.h5')
 
     plot_results(models,

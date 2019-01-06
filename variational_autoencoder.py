@@ -28,7 +28,10 @@ from scipy.stats import norm
 import tensorflow as tf
 
 # Import MNIST data
+from tensorflow.contrib.layers import relu
 from tensorflow.examples.tutorials.mnist import input_data
+from tensorflow.python.layers.core import Flatten
+
 mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
 # TODO init dataset here
 
@@ -76,10 +79,13 @@ biases = {
 target_image = tf.placeholder(tf.float32, shape=[None, image_dim])
 
 encoder = tf.matmul(target_image, weights['encoder_h1']) + biases['encoder_b1']
-encoder = tf.nn.tanh(encoder)
+encoder = tf.layers.Conv2D(64, (2,2), activation=relu)(target_image)
+encoder = tf.layers.Conv2D(64, (3,3), activation=relu)(encoder)
+encoder = tf.layers.Conv2D(64, (3,3), activation=relu)(encoder)
+encoder = Flatten()(encoder)
 
-z_mean = tf.matmul(encoder, weights['z_mean']) + biases['z_mean']
-z_std = tf.matmul(encoder, weights['z_std']) + biases['z_std']
+z_mean = tf.layers.Dense(2)(encoder)
+z_std = tf.layers.Dense(2)(encoder)
 
 # Sampler: Normal (gaussian) random distribution
 eps = tf.random_normal(tf.shape(z_std), dtype=tf.float32, mean=0., stddev=1.0,
@@ -87,10 +93,12 @@ eps = tf.random_normal(tf.shape(z_std), dtype=tf.float32, mean=0., stddev=1.0,
 z = z_mean + tf.exp(z_std / 2) * eps
 
 # Building the decoder (with scope to re-use these layers later)
-decoder = tf.matmul(z, weights['decoder_h1']) + biases['decoder_b1']
-decoder = tf.nn.tanh(decoder)
-decoder = tf.matmul(decoder, weights['decoder_out']) + biases['decoder_out']
-decoder = tf.nn.sigmoid(decoder)
+decoder = tf.layers.Dense(784, activation=relu)(z)
+decoder = tf.layers.Dense(64*28*28, activation=relu)(decoder)
+decoder = tf.reshape(decoder, (28, 28, 64))
+decoder = tf.layers.Conv2DTranspose(64, (3,3), activation=relu, padding='same')(decoder)
+decoder = tf.layers.Conv2DTranspose(64, (3,3), activation=relu, padding='same')(decoder)
+decoder = tf.layers.Conv2D(3, (2,2), activation=tf.sigmoid, padding='same')(decoder)
 
 
 # Define VAE Loss

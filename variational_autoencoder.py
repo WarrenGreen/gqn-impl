@@ -45,7 +45,7 @@ num_steps = 30000
 batch_size = 64
 
 # Network Parameters
-image_dim = 28 # MNIST images are 28x28 pixels
+image_dim = 784 # MNIST images are 28x28 pixels
 hidden_dim = 512
 latent_dim = 2
 
@@ -130,6 +130,7 @@ with tf.Session() as sess:
         # query_camera_batch: np.ndarray = query[1]
         # context_images: np.ndarray = context[0]
         # context_cameras: np.ndarray = context[1]
+        batch_x = np.reshape(batch_x, (-1, image_dim))
 
         # Train
         feed_dict = {

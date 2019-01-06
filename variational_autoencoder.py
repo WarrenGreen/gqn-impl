@@ -48,7 +48,7 @@ num_steps = 30000
 batch_size = 64
 
 # Network Parameters
-image_dim = 784 # MNIST images are 28x28 pixels
+image_dim = 28 # MNIST images are 28x28 pixels
 hidden_dim = 512
 latent_dim = 2
 
@@ -56,29 +56,13 @@ latent_dim = 2
 def glorot_init(shape):
     return tf.random_normal(shape=shape, stddev=1. / tf.sqrt(shape[0] / 2.))
 
-# Variables
-weights = {
-    'encoder_h1': tf.Variable(glorot_init([image_dim, hidden_dim])),
-    'z_mean': tf.Variable(glorot_init([hidden_dim, latent_dim])),
-    'z_std': tf.Variable(glorot_init([hidden_dim, latent_dim])),
-    'decoder_h1': tf.Variable(glorot_init([latent_dim, hidden_dim])),
-    'decoder_out': tf.Variable(glorot_init([hidden_dim, image_dim]))
-}
-biases = {
-    'encoder_b1': tf.Variable(glorot_init([hidden_dim])),
-    'z_mean': tf.Variable(glorot_init([latent_dim])),
-    'z_std': tf.Variable(glorot_init([latent_dim])),
-    'decoder_b1': tf.Variable(glorot_init([hidden_dim])),
-    'decoder_out': tf.Variable(glorot_init([image_dim]))
-}
 
 # Building the encoder
 # context_image = tf.placeholder(tf.float32, shape=[None, CONTEXT_SIZE, image_dim, image_dim, 3])
 # context_camera = tf.placeholder(tf.float32, shape=[None, CONTEXT_SIZE, 7])
 # query_camera = tf.placeholder(tf.float32, shape=[None, 7])
-target_image = tf.placeholder(tf.float32, shape=[None, image_dim])
+target_image = tf.placeholder(tf.float32, shape=[None, image_dim, image_dim, 1])
 
-encoder = tf.matmul(target_image, weights['encoder_h1']) + biases['encoder_b1']
 encoder = tf.layers.Conv2D(64, (2,2), activation=relu)(target_image)
 encoder = tf.layers.Conv2D(64, (3,3), activation=relu)(encoder)
 encoder = tf.layers.Conv2D(64, (3,3), activation=relu)(encoder)
@@ -138,7 +122,7 @@ with tf.Session() as sess:
         # query_camera_batch: np.ndarray = query[1]
         # context_images: np.ndarray = context[0]
         # context_cameras: np.ndarray = context[1]
-        batch_x = np.reshape(batch_x, (-1, image_dim))
+        batch_x = np.reshape(batch_x, (-1, image_dim, image_dim, 1))
 
         # Train
         feed_dict = {
@@ -151,11 +135,6 @@ with tf.Session() as sess:
     # Generator takes noise as input
     noise_input = tf.placeholder(tf.float32, shape=[None, latent_dim])
     # Rebuild the decoder to create image from noise
-    decoder = tf.matmul(noise_input, weights['decoder_h1']) + biases['decoder_b1']
-    decoder = tf.nn.tanh(decoder)
-    decoder = tf.matmul(decoder, weights['decoder_out']) + biases['decoder_out']
-    decoder = tf.nn.sigmoid(decoder)
-
     # Building a manifold of generated digits
     n = 20
     x_axis = np.linspace(-3, 3, n)

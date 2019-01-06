@@ -62,9 +62,9 @@ def glorot_init(shape):
 # query_camera = tf.placeholder(tf.float32, shape=[None, 7])
 target_image = tf.placeholder(tf.float32, shape=[None, image_dim, image_dim, 1])
 
-encoder = tf.layers.Conv2D(64, (2,2), activation=tf.relu)(target_image)
-encoder = tf.layers.Conv2D(64, (3,3), activation=tf.relu)(encoder)
-encoder = tf.layers.Conv2D(64, (3,3), activation=tf.relu)(encoder)
+encoder = tf.layers.Conv2D(64, (2,2), activation=tf.nn.relu)(target_image)
+encoder = tf.layers.Conv2D(64, (3,3), activation=tf.nn.relu)(encoder)
+encoder = tf.layers.Conv2D(64, (3,3), activation=tf.nn.relu)(encoder)
 encoder = Flatten()(encoder)
 
 z_mean = tf.layers.Dense(2)(encoder)
@@ -76,11 +76,11 @@ eps = tf.random_normal(tf.shape(z_std), dtype=tf.float32, mean=0., stddev=1.0,
 z = z_mean + tf.exp(z_std / 2) * eps
 
 # Building the decoder (with scope to re-use these layers later)
-decoder = tf.layers.Dense(784, activation=tf.relu)(z)
-decoder = tf.layers.Dense(64*28*28, activation=tf.relu)(decoder)
+decoder = tf.layers.Dense(784, activation=tf.nn.relu)(z)
+decoder = tf.layers.Dense(64*28*28, activation=tf.nn.relu)(decoder)
 decoder = tf.reshape(decoder, (28, 28, 64))
-decoder = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.relu, padding='same')(decoder)
-decoder = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.relu, padding='same')(decoder)
+decoder = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(decoder)
+decoder = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(decoder)
 decoder = tf.layers.Conv2D(3, (2,2), activation=tf.sigmoid, padding='same')(decoder)
 
 

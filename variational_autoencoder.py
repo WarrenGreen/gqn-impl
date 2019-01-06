@@ -73,7 +73,7 @@ biases = {
 # context_image = tf.placeholder(tf.float32, shape=[None, CONTEXT_SIZE, image_dim, image_dim, 3])
 # context_camera = tf.placeholder(tf.float32, shape=[None, CONTEXT_SIZE, 7])
 # query_camera = tf.placeholder(tf.float32, shape=[None, 7])
-target_image = tf.placeholder(tf.float32, shape=[None, image_dim, image_dim, 3])
+target_image = tf.placeholder(tf.float32, shape=[None, image_dim])
 
 encoder = tf.matmul(target_image, weights['encoder_h1']) + biases['encoder_b1']
 encoder = tf.nn.tanh(encoder)

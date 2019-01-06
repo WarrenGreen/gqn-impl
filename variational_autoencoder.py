@@ -77,12 +77,13 @@ eps = tf.random_normal(tf.shape(z_std), dtype=tf.float32, mean=0., stddev=1.0,
 z = z_mean + tf.exp(z_std / 2) * eps
 
 # Building the decoder (with scope to re-use these layers later)
-decoder = tf.layers.Dense(784, activation=tf.nn.relu)(z)
-decoder = tf.layers.Dense(64*28*28, activation=tf.nn.relu)(decoder)
-decoder = tf.reshape(decoder, (-1, 28, 28, 64))
-decoder = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(decoder)
-decoder = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(decoder)
-decoder = tf.layers.Conv2D(image_channels, (2,2), activation=tf.sigmoid, padding='same')(decoder)
+decoder = tf.layers.Dense(784, activation=tf.nn.relu)
+x = decoder(z)
+x = tf.layers.Dense(64*28*28, activation=tf.nn.relu)(x)
+x = tf.reshape(x, (-1, 28, 28, 64))
+x = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(x)
+x = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(x)
+x = tf.layers.Conv2D(image_channels, (2,2), activation=tf.sigmoid, padding='same')(x)
 
 
 # Define VAE Loss
@@ -144,7 +145,7 @@ with tf.Session() as sess:
     for i, yi in enumerate(x_axis):
         for j, xi in enumerate(y_axis):
             z_mu = np.array([[xi, yi]] * batch_size)
-            x_mean = sess.run(decoder, feed_dict={noise_input: z_mu})
+            x_mean = sess.run(decoder(noise_input), feed_dict={noise_input: z_mu})
             canvas[(n - i - 1) * 28:(n - i) * 28, j * 28:(j + 1) * 28] = \
             x_mean[0].reshape(28, 28)
 

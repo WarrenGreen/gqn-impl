@@ -89,6 +89,8 @@ output = tf.layers.Conv2D(image_channels, (2,2), activation=tf.sigmoid, padding=
 # Define VAE Loss
 def vae_loss(x_reconstructed, x_true):
     # Reconstruction loss
+    x_true = tf.reshape(x_true, (-1, 784))
+    x_reconstructed = tf.reshape(x_reconstructed, (-1, 784))
     encode_decode_loss = x_true * tf.log(1e-10 + x_reconstructed) \
                          + (1 - x_true) * tf.log(1e-10 + 1 - x_reconstructed)
     encode_decode_loss = -tf.reduce_sum(encode_decode_loss, 1)

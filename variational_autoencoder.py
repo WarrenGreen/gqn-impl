@@ -133,22 +133,21 @@ with tf.Session() as sess:
 
     # Testing
     # Generator takes noise as input
-    #noise_input = tf.placeholder(tf.float32, shape=[None, latent_dim])
+    noise_input = tf.placeholder(tf.float32, shape=[None, latent_dim])
     ## Rebuild the decoder to create image from noise
     ## Building a manifold of generated digits
-    #n = 20
-    #x_axis = np.linspace(-3, 3, n)
-    #y_axis = np.linspace(-3, 3, n)
-#
-    #canvas = np.empty((28 * n, 28 * n))
-    #for i, yi in enumerate(x_axis):
-    #    for j, xi in enumerate(y_axis):
-    #        z_mu = np.array([[xi, yi]] * batch_size)
-    #        x_mean = sess.run(decoder, feed_dict={noise_input: z_mu})
-    #        canvas[(n - i - 1) * 28:(n - i) * 28, j * 28:(j + 1) * 28] = \
-    #        x_mean[0].reshape(28, 28)
-#
-    #plt.figure(figsize=(8, 10))
-    #Xi, Yi = np.meshgrid(x_axis, y_axis)
-    #plt.imsave('canvas.png', canvas)
-#
+    n = 20
+    x_axis = np.linspace(-3, 3, n)
+    y_axis = np.linspace(-3, 3, n)
+
+    canvas = np.empty((28 * n, 28 * n))
+    for i, yi in enumerate(x_axis):
+        for j, xi in enumerate(y_axis):
+            z_mu = np.array([[xi, yi]] * batch_size)
+            x_mean = sess.run(decoder, feed_dict={noise_input: z_mu})
+            canvas[(n - i - 1) * 28:(n - i) * 28, j * 28:(j + 1) * 28] = \
+            x_mean[0].reshape(28, 28)
+
+    plt.figure(figsize=(8, 10))
+    Xi, Yi = np.meshgrid(x_axis, y_axis)
+    plt.imsave('canvas.png', canvas)

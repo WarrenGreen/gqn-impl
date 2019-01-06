@@ -130,7 +130,7 @@ CONTEXT_SIZE = 4
 
 
 def data_gen(train_or_test = 'train') -> Tuple:
-    data_reader = DataReader(dataset='scene_name', context_size=CONTEXT_SIZE, root=root_path, mode=train_or_test)
+    data_reader = DataReader(dataset=scene_name, context_size=CONTEXT_SIZE, root=root_path, mode=train_or_test)
     while True:
         data = data_reader.read(batch_size=12)
         query: Query = data[0]

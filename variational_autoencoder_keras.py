@@ -130,7 +130,6 @@ CONTEXT_SIZE = 4
 
 
 def data_gen(train_or_test = 'train') -> Tuple:
-    sess = tf.Session()
     data_reader = DataReader(dataset=scene_name, context_size=CONTEXT_SIZE, root=root_path, mode=train_or_test)
     while True:
         data = data_reader.read(batch_size=12)
@@ -151,10 +150,10 @@ latent_dim = 2
 epochs = 50
 
 
-def get_model(input_shape, intermediate_dim, latent_dim, input_tensor):
+def get_model(input_shape, intermediate_dim, latent_dim):
     # VAE model = encoder + decoder
     # build encoder model
-    inputs = Input(shape=input_shape, name='encoder_input', tensor=input_tensor)
+    inputs = Input(shape=input_shape, name='encoder_input')
     x = Conv2D(64, (2,2), activation=relu)(inputs)
     x = Conv2D(64, (3,3), activation=relu)(x)
     x = Conv2D(64, (3,3), activation=relu)(x)
@@ -199,7 +198,7 @@ if __name__ == '__main__':
                         "--mse",
                         help=help_, action='store_true')
     args = parser.parse_args()
-    vae, encoder, decoder, inputs, z_mean, z_log_var, latent_inputs, outputs = get_model(input_shape, intermediate_dim, latent_dim, )
+    vae, encoder, decoder, inputs, z_mean, z_log_var, latent_inputs, outputs = get_model(input_shape, intermediate_dim, latent_dim )
     models = (encoder, decoder)
     data = (x_test, y_test)
 

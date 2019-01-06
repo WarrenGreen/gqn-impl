@@ -70,12 +70,12 @@ biases = {
 }
 
 # Building the encoder
-context_image = tf.placeholder(tf.float32, shape=[None, CONTEXT_SIZE, image_dim, image_dim, 3])
-context_camera = tf.placeholder(tf.float32, shape=[None, CONTEXT_SIZE, 7])
-query_camera = tf.placeholder(tf.float32, shape=[None, 7])
+# context_image = tf.placeholder(tf.float32, shape=[None, CONTEXT_SIZE, image_dim, image_dim, 3])
+# context_camera = tf.placeholder(tf.float32, shape=[None, CONTEXT_SIZE, 7])
+# query_camera = tf.placeholder(tf.float32, shape=[None, 7])
 target_image = tf.placeholder(tf.float32, shape=[None, image_dim, image_dim, 3])
 
-encoder = tf.matmul(context_image, weights['encoder_h1']) + biases['encoder_b1']
+encoder = tf.matmul(target_image, weights['encoder_h1']) + biases['encoder_b1']
 encoder = tf.nn.tanh(encoder)
 
 z_mean = tf.matmul(encoder, weights['z_mean']) + biases['z_mean']
@@ -104,7 +104,8 @@ def vae_loss(x_reconstructed, x_true):
     kl_div_loss = -0.5 * tf.reduce_sum(kl_div_loss, 1)
     return tf.reduce_mean(encode_decode_loss + kl_div_loss)
 
-loss_op = vae_loss(decoder, context_image)
+
+loss_op = vae_loss(decoder, target_image)
 optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
 train_op = optimizer.minimize(loss_op)
 
@@ -132,9 +133,6 @@ with tf.Session() as sess:
 
         # Train
         feed_dict = {
-            context_image: context_images,
-            context_cameras: context_cameras,
-            query_camera: query_camera_batch,
             target_image: target_img_batch}
         _, l = sess.run([train_op, loss_op], feed_dict=feed_dict)
         if i % 1000 == 0 or i == 1:

@@ -78,7 +78,7 @@ z = z_mean + tf.exp(z_std / 2) * eps
 # Building the decoder (with scope to re-use these layers later)
 decoder = tf.layers.Dense(784, activation=tf.nn.relu)(z)
 decoder = tf.layers.Dense(64*28*28, activation=tf.nn.relu)(decoder)
-decoder = tf.reshape(decoder, (28, 28, 64))
+decoder = tf.reshape(decoder, (-1, 28, 28, 64))
 decoder = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(decoder)
 decoder = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(decoder)
 decoder = tf.layers.Conv2D(3, (2,2), activation=tf.sigmoid, padding='same')(decoder)

@@ -28,8 +28,8 @@ from scipy.stats import norm
 import tensorflow as tf
 
 # Import MNIST data
-#from tensorflow.examples.tutorials.mnist import input_data
-#mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
+from tensorflow.examples.tutorials.mnist import input_data
+mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
 # TODO init dataset here
 
 from data_reader import DataReader, Query, Context
@@ -37,7 +37,7 @@ from data_reader import DataReader, Query, Context
 root_path = '/mnt/es0/data/warren/gqn-impl/data'
 scene_name = 'rooms_ring_camera'
 CONTEXT_SIZE = 4
-data_reader = DataReader(dataset='scene_name', context_size=CONTEXT_SIZE, root=root_path)
+data_reader = DataReader(dataset=scene_name, context_size=CONTEXT_SIZE, root=root_path)
 
 # Parameters
 learning_rate = 0.001
@@ -45,7 +45,7 @@ num_steps = 30000
 batch_size = 64
 
 # Network Parameters
-image_dim = 64 # MNIST images are 28x28 pixels
+image_dim = 28 # MNIST images are 28x28 pixels
 hidden_dim = 512
 latent_dim = 2
 
@@ -121,19 +121,19 @@ with tf.Session() as sess:
     for i in range(1, num_steps+1):
         # Prepare Data
         # Get the next batch of MNIST data (only images are needed, not labels)
-        # batch_x, _ = mnist.train.next_batch(batch_size)
+        batch_x, _ = mnist.train.next_batch(batch_size)
         # TODO: read in  batch here
-        data = data_reader.read(batch_size=12)
-        query: Query = data[0]
-        target_img_batch: np.ndarray = data[1]
-        context: Context = query[0]
-        query_camera_batch: np.ndarray = query[1]
-        context_images: np.ndarray = context[0]
-        context_cameras: np.ndarray = context[1]
+        # data = data_reader.read(batch_size=12)
+        # query: Query = data[0]
+        # target_img_batch: np.ndarray = data[1]
+        # context: Context = query[0]
+        # query_camera_batch: np.ndarray = query[1]
+        # context_images: np.ndarray = context[0]
+        # context_cameras: np.ndarray = context[1]
 
         # Train
         feed_dict = {
-            target_image: target_img_batch}
+            target_image: batch_x}
         _, l = sess.run([train_op, loss_op], feed_dict=feed_dict)
         if i % 1000 == 0 or i == 1:
             print('Step %i, Loss: %f' % (i, l))

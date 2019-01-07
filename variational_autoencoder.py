@@ -76,11 +76,10 @@ z_std = tf.layers.Dense(2)(encoder)
 eps = tf.random_normal(tf.shape(z_std), dtype=tf.float32, mean=0., stddev=1.0,
                        name='epsilon')
 z = z_mean + tf.exp(z_std / 2) * eps
-
+latent_input = tf.placeholder_with_default(z, (), name='latent_input')
 # Building the decoder (with scope to re-use these layers later)
-decoder = tf.layers.Dense(784, activation=tf.nn.relu)
-x = decoder(z)
-x = tf.layers.Dense(64*28*28, activation=tf.nn.relu)(x)
+decoder = tf.layers.Dense(784, activation=tf.nn.relu)(latent_input)
+x = tf.layers.Dense(64*28*28, activation=tf.nn.relu)(decoder)
 x = tf.reshape(x, (-1, 28, 28, 64))
 x = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(x)
 x = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(x)
@@ -144,7 +143,7 @@ with tf.Session() as sess:
     for i, yi in enumerate(x_axis):
         for j, xi in enumerate(y_axis):
             z_mu = np.array([[xi, yi]] * batch_size)
-            x_mean = sess.run(decoder(noise_input), feed_dict={noise_input: z_mu})
+            x_mean = sess.run(output, feed_dict={latent_input: z_mu})
             canvas[(n - i - 1) * 28:(n - i) * 28, j * 28:(j + 1) * 28] = \
             x_mean[0].reshape(28, 28)
 

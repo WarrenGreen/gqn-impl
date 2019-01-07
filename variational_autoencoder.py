@@ -48,10 +48,11 @@ num_steps = 30000
 batch_size = 64
 
 # Network Parameters
-image_dim = 28 # MNIST images are 28x28 pixels
-image_channels = 1
+image_dim = 64 # MNIST images are 28x28 pixels, gqn 64x64x3
+image_channels = 3
 hidden_dim = 512
 latent_dim = 2
+conv_channels = 64
 
 # A custom initialization (see Xavier Glorot init)
 def glorot_init(shape):
@@ -64,9 +65,9 @@ def glorot_init(shape):
 # query_camera = tf.placeholder(tf.float32, shape=[None, 7])
 target_image = tf.placeholder(tf.float32, shape=[None, image_dim, image_dim, image_channels])
 
-encoder = tf.layers.Conv2D(64, (2,2), activation=tf.nn.relu)(target_image)
-encoder = tf.layers.Conv2D(64, (3,3), activation=tf.nn.relu)(encoder)
-encoder = tf.layers.Conv2D(64, (3,3), activation=tf.nn.relu)(encoder)
+encoder = tf.layers.Conv2D(conv_channels, (2,2), activation=tf.nn.relu)(target_image)
+encoder = tf.layers.Conv2D(conv_channels, (3,3), activation=tf.nn.relu)(encoder)
+encoder = tf.layers.Conv2D(conv_channels, (3,3), activation=tf.nn.relu)(encoder)
 encoder = Flatten()(encoder)
 
 z_mean = tf.layers.Dense(2)(encoder)
@@ -78,11 +79,11 @@ eps = tf.random_normal(tf.shape(z_std), dtype=tf.float32, mean=0., stddev=1.0,
 z = z_mean + tf.exp(z_std / 2) * eps
 latent_input = tf.placeholder_with_default(z, name='latent_input', shape=[None, 2])
 # Building the decoder (with scope to re-use these layers later)
-decoder = tf.layers.Dense(784, activation=tf.nn.relu)(latent_input)
-x = tf.layers.Dense(64*28*28, activation=tf.nn.relu)(decoder)
-x = tf.reshape(x, (-1, 28, 28, 64))
-x = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(x)
-x = tf.layers.Conv2DTranspose(64, (3,3), activation=tf.nn.relu, padding='same')(x)
+decoder = tf.layers.Dense(image_dim*image_dim, activation=tf.nn.relu)(latent_input)
+x = tf.layers.Dense(conv_channels*image_dim*image_dim, activation=tf.nn.relu)(decoder)
+x = tf.reshape(x, (-1, image_dim, image_dim, conv_channels))
+x = tf.layers.Conv2DTranspose(conv_channels, (3,3), activation=tf.nn.relu, padding='same')(x)
+x = tf.layers.Conv2DTranspose(conv_channels, (3,3), activation=tf.nn.relu, padding='same')(x)
 output = tf.layers.Conv2D(image_channels, (2,2), activation=tf.sigmoid, padding='same')(x)
 
 
@@ -114,14 +115,14 @@ with tf.Session() as sess:
         # Get the next batch of MNIST data (only images are needed, not labels)
         batch_x, _ = mnist.train.next_batch(batch_size)
         # TODO: read in  batch here
-        # data = data_reader.read(batch_size=12)
-        # query: Query = data[0]
-        # target_img_batch: np.ndarray = data[1]
+        data = data_reader.read(batch_size=12)
+        query: Query = data[0]
+        target_img_batch: np.ndarray = data[1]
         # context: Context = query[0]
         # query_camera_batch: np.ndarray = query[1]
         # context_images: np.ndarray = context[0]
         # context_cameras: np.ndarray = context[1]
-        batch_x = np.reshape(batch_x, (-1, image_dim, image_dim, image_channels))
+        batch_x = np.reshape(target_img_batch, (-1, image_dim, image_dim, image_channels))
 
         # Train
         feed_dict = {
@@ -139,13 +140,13 @@ with tf.Session() as sess:
     x_axis = np.linspace(-3, 3, n)
     y_axis = np.linspace(-3, 3, n)
 
-    canvas = np.empty((28 * n, 28 * n))
+    canvas = np.empty((image_dim * n, image_dim * n))
     for i, yi in enumerate(x_axis):
         for j, xi in enumerate(y_axis):
             z_mu = np.array([[xi, yi]] * batch_size)
             x_mean = sess.run(output, feed_dict={latent_input: z_mu})
-            canvas[(n - i - 1) * 28:(n - i) * 28, j * 28:(j + 1) * 28] = \
-            x_mean[0].reshape(28, 28)
+            canvas[(n - i - 1) * image_dim:(n - i) * image_dim, j * image_dim:(j + 1) * image_dim] = \
+            x_mean[0].reshape(image_dim, image_dim)
 
     plt.figure(figsize=(8, 10))
     Xi, Yi = np.meshgrid(x_axis, y_axis)

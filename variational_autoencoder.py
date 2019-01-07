@@ -142,13 +142,13 @@ with tf.Session() as sess:
     x_axis = np.linspace(-3, 3, n)
     y_axis = np.linspace(-3, 3, n)
 
-    canvas = np.empty((image_dim * n, image_dim * n))
+    canvas = np.empty((image_dim * n, image_dim * n, image_channels))
     for i, yi in enumerate(x_axis):
         for j, xi in enumerate(y_axis):
             z_mu = np.array([[xi, yi]] * batch_size)
             x_mean = sess.run(output, feed_dict={latent_input: z_mu})
             canvas[(n - i - 1) * image_dim:(n - i) * image_dim, j * image_dim:(j + 1) * image_dim] = \
-            x_mean[0].reshape(image_dim, image_dim)
+            x_mean[0].reshape(image_dim, image_dim, image_channels)
 
     plt.figure(figsize=(8, 10))
     Xi, Yi = np.meshgrid(x_axis, y_axis)

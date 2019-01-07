@@ -64,7 +64,7 @@ def glorot_init(shape):
 # context_camera = tf.placeholder(tf.float32, shape=[None, CONTEXT_SIZE, 7])
 # query_camera = tf.placeholder(tf.float32, shape=[None, 7])
 # target_image = tf.placeholder(tf.float32, shape=[None, image_dim, image_dim, image_channels])
-target_image = tf.ones(dtype=tf.float32, shape=[None, image_dim, image_dim, image_channels])
+target_image = tf.ones(dtype=tf.float32, shape=[batch_size, image_dim, image_dim, image_channels])
 encoder = tf.layers.Conv2D(conv_channels, (2,2), activation=tf.nn.relu)(target_image)
 encoder = tf.layers.Conv2D(conv_channels, (3,3), activation=tf.nn.relu)(encoder)
 encoder = tf.layers.Conv2D(conv_channels, (3,3), activation=tf.nn.relu)(encoder)
@@ -115,7 +115,7 @@ with tf.Session() as sess:
         # Get the next batch of MNIST data (only images are needed, not labels)
         # batch_x, _ = mnist.train.next_batch(batch_size)
         # TODO: read in  batch here
-        data = data_reader.read(batch_size=12)
+        data = data_reader.read(batch_size=batch_size)
         query: Query = data[0]
         target_img_batch: np.ndarray = data[1]
         # context: Context = query[0]

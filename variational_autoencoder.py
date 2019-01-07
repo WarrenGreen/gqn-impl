@@ -76,7 +76,8 @@ z_std = tf.layers.Dense(2)(encoder)
 eps = tf.random_normal(tf.shape(z_std), dtype=tf.float32, mean=0., stddev=1.0,
                        name='epsilon')
 z = z_mean + tf.exp(z_std / 2) * eps
-latent_input = tf.placeholder_with_default(z, name='latent_input', shape=[2])
+tf.Print(z,z)
+latent_input = tf.placeholder_with_default(z, name='latent_input', shape=[2,1])
 # Building the decoder (with scope to re-use these layers later)
 decoder = tf.layers.Dense(784, activation=tf.nn.relu)(latent_input)
 x = tf.layers.Dense(64*28*28, activation=tf.nn.relu)(decoder)

@@ -63,8 +63,8 @@ def glorot_init(shape):
 # context_image = tf.placeholder(tf.float32, shape=[None, CONTEXT_SIZE, image_dim, image_dim, 3])
 # context_camera = tf.placeholder(tf.float32, shape=[None, CONTEXT_SIZE, 7])
 # query_camera = tf.placeholder(tf.float32, shape=[None, 7])
-target_image = tf.placeholder(tf.float32, shape=[None, image_dim, image_dim, image_channels])
-
+# target_image = tf.placeholder(tf.float32, shape=[None, image_dim, image_dim, image_channels])
+target_image = tf.ones(dtype=tf.float32, shape=[None, image_dim, image_dim, image_channels])
 encoder = tf.layers.Conv2D(conv_channels, (2,2), activation=tf.nn.relu)(target_image)
 encoder = tf.layers.Conv2D(conv_channels, (3,3), activation=tf.nn.relu)(encoder)
 encoder = tf.layers.Conv2D(conv_channels, (3,3), activation=tf.nn.relu)(encoder)

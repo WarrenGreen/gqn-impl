@@ -122,7 +122,8 @@ with tf.Session() as sess:
         # query_camera_batch: np.ndarray = query[1]
         # context_images: np.ndarray = context[0]
         # context_cameras: np.ndarray = context[1]
-        batch_x = tf.reshape(target_img_batch, (-1, image_dim, image_dim, image_channels))
+        with tf.Session() as sess:
+            batch_x = sess.run(tf.reshape(target_img_batch, (-1, image_dim, image_dim, image_channels)))
 
         # Train
         feed_dict = {

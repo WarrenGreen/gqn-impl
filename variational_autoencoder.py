@@ -80,8 +80,8 @@ z = z_mean + tf.exp(z_std / 2) * eps
 latent_input = tf.placeholder_with_default(z, name='latent_input', shape=[None, 2])
 # Building the decoder (with scope to re-use these layers later)
 decoder = tf.layers.Dense(image_dim*image_dim, activation=tf.nn.relu)(latent_input)
-x = tf.layers.Dense(conv_channels*image_dim*image_dim, activation=tf.nn.relu)(decoder)
-x = tf.reshape(x, (-1, image_dim, image_dim, conv_channels))
+x = tf.layers.Dense(image_dim*image_dim*3, activation=tf.nn.relu)(decoder)
+x = tf.reshape(x, (-1, image_dim, image_dim, 3))
 x = tf.layers.Conv2DTranspose(conv_channels, (3,3), activation=tf.nn.relu, padding='same')(x)
 x = tf.layers.Conv2DTranspose(conv_channels, (3,3), activation=tf.nn.relu, padding='same')(x)
 output = tf.layers.Conv2D(image_channels, (2,2), activation=tf.sigmoid, padding='same')(x)
@@ -113,7 +113,7 @@ with tf.Session() as sess:
     for i in range(1, num_steps+1):
         # Prepare Data
         # Get the next batch of MNIST data (only images are needed, not labels)
-        batch_x, _ = mnist.train.next_batch(batch_size)
+        # batch_x, _ = mnist.train.next_batch(batch_size)
         # TODO: read in  batch here
         data = data_reader.read(batch_size=12)
         query: Query = data[0]
@@ -122,7 +122,7 @@ with tf.Session() as sess:
         # query_camera_batch: np.ndarray = query[1]
         # context_images: np.ndarray = context[0]
         # context_cameras: np.ndarray = context[1]
-        batch_x = np.reshape(target_img_batch, (-1, image_dim, image_dim, image_channels))
+        batch_x = tf.reshape(target_img_batch, (-1, image_dim, image_dim, image_channels))
 
         # Train
         feed_dict = {
